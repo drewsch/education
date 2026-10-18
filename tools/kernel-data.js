@@ -1,6 +1,6 @@
 const KERNEL = [
 
-{id:"process", title:"Process Management", icon:"⚙️", color:"#6366F1",
+{id:"process", title:"Process Management", icon:"⚙️", color:"#C2552B",
 theory:[
 
 {title:"Что такое процесс: task_struct изнутри", body:`ПРОСТЫМИ СЛОВАМИ
@@ -393,7 +393,7 @@ terms:[
 {t:"preemption (вытеснение)", d:"Принудительное отбирание CPU у процесса планировщиком до того, как он сам его отдал."}
 ]},
 
-{id:"memory", title:"Memory Management", icon:"🧠", color:"#EC4899",
+{id:"memory", title:"Memory Management", icon:"🧠", color:"#9A4A66",
 theory:[
 
 {title:"Виртуальная память: зачем она и как выглядит адресное пространство", body:`ЗАЧЕМ ВООБЩЕ ВИРТУАЛЬНАЯ ПАМЯТЬ
@@ -1020,7 +1020,7 @@ terms:[
 {t:"THP", d:"Transparent Huge Pages — автоматическая склейка страниц в 2 МБ блоки ядром. Ускоряет за счёт TLB, но может давать паузы на дефрагментации."}
 ]},
 
-{id:"vfs", title:"VFS (Virtual File System)", icon:"📁", color:"#10B981",
+{id:"vfs", title:"VFS (Virtual File System)", icon:"📁", color:"#3D7A57",
 theory:[
 
 {title:"VFS: единый интерфейс поверх всех файловых систем", body:`ПРОБЛЕМА, КОТОРУЮ РЕШАЕТ VFS
@@ -1293,7 +1293,7 @@ terms:[
 {t:"CLOSE_WAIT", d:"Состояние сокета: удалённая сторона закрыла соединение, локальное приложение ещё не вызвало close(). Рост = утечка дескрипторов."}
 ]},
 
-{id:"syscalls", title:"System Calls", icon:"🔬", color:"#F59E0B",
+{id:"syscalls", title:"System Calls", icon:"🔬", color:"#B07A18",
 theory:[
 
 {title:"Механизм системного вызова: полный путь из Ring 3 в Ring 0", body:`ЗАЧЕМ НУЖНЫ КОЛЬЦА ЗАЩИТЫ
@@ -1533,7 +1533,7 @@ terms:[
 {t:"KPTI", d:"Kernel Page Table Isolation — митигация уязвимости Meltdown; разделяет таблицы страниц ядра и userspace, удорожая каждый syscall."}
 ]},
 
-{id:"drivers", title:"Device Drivers & IRQ", icon:"🔌", color:"#8B5CF6",
+{id:"drivers", title:"Device Drivers & IRQ", icon:"🔌", color:"#7E4A85",
 theory:[
 
 {title:"Прерывания: top half, bottom half, softirq, ksoftirqd", body:`ЗАЧЕМ НУЖНЫ ПРЕРЫВАНИЯ
@@ -1771,7 +1771,7 @@ terms:[
 {t:"irqbalance", d:"Демон, автоматически распределяющий прерывания по ядрам. Перезаписывает ручные настройки smp_affinity."}
 ]},
 
-{id:"network", title:"Network Stack", icon:"🌐", color:"#06B6D4",
+{id:"network", title:"Network Stack", icon:"🌐", color:"#2F7D6E",
 theory:[
 
 {title:"Путь входящего пакета: от кабеля до read() в приложении", body:`ПОЛНАЯ ЦЕПОЧКА, ШАГ ЗА ШАГОМ
@@ -2110,7 +2110,7 @@ terms:[
 {t:"qdisc", d:"Queueing discipline — дисциплина очереди на исходящем интерфейсе, управляет порядком и скоростью отправки пакетов."}
 ]},
 
-{id:"ipc", title:"IPC (межпроцессное взаимодействие)", icon:"🔗", color:"#EF4444",
+{id:"ipc", title:"IPC (межпроцессное взаимодействие)", icon:"🔗", color:"#B33A2C",
 theory:[
 
 {title:"Обзор всех механизмов IPC: что выбрать и почему", body:`ЗАЧЕМ IPC
