@@ -12,7 +12,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Источник заметок — хранилище Obsidian (единственный источник правды).
 # Переопределяется переменной окружения NT_KB_DIR; если хранилища нет — берётся content/ в репозитории.
 VAULT_KB = os.path.join(os.path.expanduser("~"), "Documents", "Obsidian Vault",
-                        "04 Обучение", "База знаний НТ")
+                        "01 База знаний НТ")
 KB_DIR = os.environ.get("NT_KB_DIR") or VAULT_KB
 if not os.path.isdir(KB_DIR):
     KB_DIR = os.path.join(ROOT, "content")

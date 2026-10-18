@@ -8,7 +8,7 @@ const os = require("os");
 
 const ROOT = path.dirname(__dirname);
 const OUT = process.argv[2] || path.join(os.homedir(), "Documents", "Obsidian Vault",
-  "04 Обучение", "База знаний НТ", "Ядро Linux");
+  "01 База знаний НТ", "Ядро Linux");
 
 const src = fs.readFileSync(path.join(ROOT, "tools", "kernel-data.js"), "utf8");
 const KERNEL = new Function(src + ";return KERNEL;")();
