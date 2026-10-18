@@ -8,7 +8,17 @@ except ImportError:
     sys.exit("Нужен пакет markdown: pip install markdown")
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-KB = os.path.join(ROOT, "content") + os.sep
+
+# Источник заметок — хранилище Obsidian (единственный источник правды).
+# Переопределяется переменной окружения NT_KB_DIR; если хранилища нет — берётся content/ в репозитории.
+VAULT_KB = os.path.join(os.path.expanduser("~"), "Documents", "Obsidian Vault",
+                        "04 Обучение", "База знаний НТ")
+KB_DIR = os.environ.get("NT_KB_DIR") or VAULT_KB
+if not os.path.isdir(KB_DIR):
+    KB_DIR = os.path.join(ROOT, "content")
+if not os.path.isdir(KB_DIR):
+    sys.exit("Не найдена папка с заметками: " + KB_DIR)
+KB = KB_DIR + os.sep
 TOOLS = os.path.join(ROOT, "tools")
 OUT = os.path.join(ROOT, "public", "index.html")
 
