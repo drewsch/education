@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>База знаний НТ — Linux, сеть, БД, рантаймы, архитектура</title>
+<meta name="description" content="База знаний по нагрузочному тестированию и производительности: Linux, сеть, PostgreSQL, ClickHouse, Kafka, Redis, JVM, Go, Python, Kubernetes, system design">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+:root{
+  --bg:#080B14; --bg2:#0A0D1A; --card:#0C1020; --card-h:#0F1528; --line:#1A1F2E; --line2:#232A3D;
+  --tx:#E2E8F0; --tx2:#CBD5E1; --tx3:#94A3B8; --mut:#64748B; --mut2:#475569;
+  --code-bg:#060911; --code-tx:#A5B4C8; --inl-bg:#141A2B; --inl-tx:#E9D5FF;
+  --acc:#6366F1; --ok:#22C55E; --mark:#F59E0B33;
+}
+:root[data-theme="light"]{
+  --bg:#F6F7FB; --bg2:#FFFFFF; --card:#FFFFFF; --card-h:#F8FAFF; --line:#E3E7EF; --line2:#D5DBE6;
+  --tx:#0F172A; --tx2:#1E293B; --tx3:#334155; --mut:#64748B; --mut2:#94A3B8;
+  --code-bg:#F1F4F9; --code-tx:#1E293B; --inl-bg:#EEF0FA; --inl-tx:#4C1D95; --mark:#FDE68A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--tx)}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+button{font-family:inherit}
+a{color:inherit}
+
+/* header */
+.hdr{position:sticky;top:0;z-index:30;background:var(--bg2);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:10px 16px;height:58px}
+.menu-btn{display:none;background:none;border:1px solid var(--line);color:var(--tx2);border-radius:8px;width:36px;height:36px;font-size:16px;cursor:pointer}
+.logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#6366F1,#EC4899);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.brand{min-width:0}
+.brand b{display:block;font-size:14.5px;color:var(--tx);white-space:nowrap}
+.brand span{display:block;font-size:11px;color:var(--mut2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search{flex:1;max-width:460px;margin-left:auto;position:relative}
+.search input{width:100%;background:var(--card);border:1px solid var(--line);color:var(--tx);border-radius:9px;padding:8px 12px 8px 34px;font-size:13.5px;outline:none}
+.search input:focus{border-color:var(--acc)}
+.search::before{content:"⌕";position:absolute;left:11px;top:50%;transform:translateY(-52%);color:var(--mut);font-size:17px}
+.tbtn{background:var(--card);border:1px solid var(--line);color:var(--tx2);border-radius:9px;height:36px;padding:0 11px;cursor:pointer;font-size:14px;flex-shrink:0}
+
+/* layout */
+.layout{display:flex;align-items:flex-start}
+.side{width:268px;flex-shrink:0;position:sticky;top:58px;height:calc(100vh - 58px);overflow-y:auto;border-right:1px solid var(--line);background:var(--bg2);padding:14px 10px 30px}
+.grp{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mut2);margin:16px 10px 6px}
+.grp:first-child{margin-top:4px}
+.nav{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;color:var(--tx3);padding:7px 10px;border-radius:8px;cursor:pointer;font-size:13.5px}
+.nav:hover{background:var(--card-h);color:var(--tx)}
+.nav.act{color:var(--tx);font-weight:600}
+.nav .ic{width:22px;text-align:center;flex-shrink:0}
+.nav .pr{margin-left:auto;font-size:10.5px;color:var(--mut2);font-variant-numeric:tabular-nums}
+.main{flex:1;min-width:0;padding:22px 28px 80px}
+.wrap{max-width:920px;margin:0 auto}
+.backdrop{display:none}
+
+/* page head */
+.phead{display:flex;gap:14px;align-items:center;margin-bottom:6px}
+.pico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:23px;flex-shrink:0}
+.ptitle{font-size:22px;font-weight:750;line-height:1.25;color:var(--tx)}
+.psub{font-size:12px;color:var(--mut);margin-top:2px}
+.intro{margin:12px 0 4px;font-size:13.5px;color:var(--tx3)}
+.intro blockquote{border:none;padding:0;margin:0}
+.intro p{margin:4px 0}
+.modes{display:flex;gap:6px;margin:16px 0 14px;flex-wrap:wrap}
+.mode{padding:6px 14px;border-radius:18px;border:1px solid var(--line);background:var(--card);color:var(--mut);cursor:pointer;font-size:12.5px;font-weight:600}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:var(--mut)}
+.lnk{background:none;border:none;color:var(--mut);cursor:pointer;font-size:12px;text-decoration:underline;text-underline-offset:3px}
+.lnk:hover{color:var(--tx)}
+.bar{height:4px;border-radius:3px;background:var(--line);overflow:hidden;width:140px}
+.bar i{display:block;height:100%}
+
+/* cards */
+.part{margin:26px 0 10px;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.card{scroll-margin-top:72px;border:1px solid var(--line);border-radius:12px;margin-bottom:9px;background:var(--card);overflow:hidden}
+.card-h{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;background:none;border:none;cursor:pointer;text-align:left;color:var(--tx2)}
+.card-h:hover{background:var(--card-h)}
+.num{font-size:11px;color:var(--mut2);min-width:22px;font-variant-numeric:tabular-nums}
+.ct{flex:1;font-weight:620;font-size:14.5px}
+.arr{color:var(--mut2);font-size:12px}
+.chk{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;flex-shrink:0;cursor:pointer;background:none}
+.chk.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.card-b{padding:4px 20px 20px;border-top:1px solid var(--line)}
+
+/* content typography */
+.md{color:var(--tx2);font-size:14.5px;line-height:1.72}
+.md p{margin:10px 0}
+.md h3{font-size:16px;margin:22px 0 8px;color:var(--tx)}
+.md h4{font-size:14.5px;margin:18px 0 6px;color:var(--tx)}
+.md ul,.md ol{margin:8px 0 10px 22px}
+.md li{margin:3px 0}
+.md strong{color:var(--tx)}
+.md hr{border:none;border-top:1px solid var(--line);margin:18px 0}
+.md blockquote{border-left:3px solid var(--acc);background:var(--card-h);margin:12px 0;padding:8px 14px;border-radius:0 8px 8px 0;color:var(--tx3)}
+.md code{font-family:"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;font-size:12.6px;background:var(--inl-bg);color:var(--inl-tx);padding:1px 5px;border-radius:5px}
+.md pre{background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0;overflow-x:auto;line-height:1.6}
+.md pre code{background:none;color:var(--code-tx);padding:0;font-size:12.6px;white-space:pre}
+.tw{overflow-x:auto;margin:12px 0;border:1px solid var(--line);border-radius:10px}
+.md table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.5}
+.md th{background:var(--card-h);color:var(--tx);text-align:left;font-weight:650;padding:8px 10px;border-bottom:1px solid var(--line2);white-space:nowrap}
+.md td{padding:7px 10px;border-top:1px solid var(--line);vertical-align:top}
+.md tr:first-child td{border-top:none}
+.md a[target]{color:var(--acc);text-underline-offset:3px}
+.wl{color:var(--acc);text-decoration:none;border-bottom:1px dashed currentColor}
+mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 1px}
+pre.kpre{white-space:pre-wrap;font-family:"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;font-size:12.8px;line-height:1.75;color:var(--code-tx);background:none;border:none;border-left:3px solid var(--line2);padding:2px 0 2px 14px;margin:10px 0 0;overflow-x:auto}
+
+/* questions */
+.qg{font-size:12px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.08em;margin:20px 0 8px}
+.q{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:var(--card);font-size:14px;color:var(--tx2)}
+.q .qn{font-size:11px;color:var(--mut2);min-width:24px;padding-top:2px;font-variant-numeric:tabular-nums}
+.q .qt{flex:1}
+.q.known .qt{color:var(--mut)}
+.ans{margin:10px 0 0;background:var(--code-bg);border-radius:8px;padding:12px 14px}
+.ans-l{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.ans pre{white-space:pre-wrap;font-family:inherit;font-size:13.5px;line-height:1.75;color:var(--tx3)}
+.rand{border:1px solid var(--acc);border-radius:12px;padding:16px 18px;margin-bottom:16px;background:var(--card)}
+.rand .rq{font-size:16px;font-weight:620;color:var(--tx);margin:6px 0 10px}
+
+/* kernel chips */
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 6px}
+.chip{padding:6px 12px;border-radius:18px;border:1px solid var(--line);background:transparent;color:var(--mut);cursor:pointer;font-size:12.5px;white-space:nowrap}
+.term{display:flex;gap:14px;padding:11px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:7px;background:var(--card)}
+.term-t{font-weight:700;font-size:13.5px;min-width:180px;flex-shrink:0}
+.term-d{font-size:13.5px;color:var(--tx3);line-height:1.6}
+.tip{margin:16px 0;padding:11px 14px;border:1px solid var(--line);border-radius:10px;font-size:12.5px;color:var(--mut);background:var(--card)}
+.tip b{color:#F59E0B}
+
+/* search results */
+.res{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:11px 14px;margin-bottom:7px;cursor:pointer;color:var(--tx2)}
+.res:hover{border-color:var(--acc)}
+.res .rp{font-size:11px;color:var(--mut);margin-bottom:2px}
+.res .rt{font-weight:620;font-size:14px}
+.res .rs{font-size:12.5px;color:var(--tx3);margin-top:4px}
+.empty{color:var(--mut);padding:30px 0;text-align:center}
+
+/* map page tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:14px 0 20px}
+.tile{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--card);cursor:pointer;text-align:left;color:var(--tx2)}
+.tile:hover{border-color:var(--acc)}
+.tile .ti{font-size:22px}
+.tile .tt{font-weight:650;margin:6px 0 2px;color:var(--tx)}
+.tile .ts{font-size:12px;color:var(--mut)}
+
+@media (max-width:900px){
+  .menu-btn{display:block}
+  .side{position:fixed;left:0;top:58px;z-index:40;transform:translateX(-105%);transition:transform .2s;box-shadow:0 10px 40px #0008}
+  body.drawer .side{transform:none}
+  body.drawer .backdrop{display:block;position:fixed;inset:58px 0 0 0;background:#0007;z-index:35}
+  .main{padding:16px 16px 70px}
+  .brand span{display:none}
+  .search{max-width:none}
+  .term{flex-direction:column;gap:4px}.term-t{min-width:0}
+  .card-b{padding:4px 14px 16px}
+}
+@media (max-width:520px){ .brand{display:none} .ptitle{font-size:19px} }
+</style>
+</head>
+<body>
+<header class="hdr">
+  <button class="menu-btn" id="menuBtn" aria-label="Меню">☰</button>
+  <div class="logo">🐧</div>
+  <div class="brand"><b>База знаний НТ</b><span>Linux · сеть · БД · рантаймы · архитектура · методология</span></div>
+  <div class="search"><input id="q" type="search" placeholder="Поиск по всей базе…" autocomplete="off"></div>
+  <button class="tbtn" id="themeBtn" title="Светлая / тёмная тема">🌗</button>
+</header>
+<div class="layout">
+  <nav class="side" id="side"></nav>
+  <div class="backdrop" id="backdrop"></div>
+  <main class="main"><div class="wrap" id="view"></div></main>
+</div>
+
+<script type="application/json" id="pagesData">__PAGES_JSON__</script>
+<script>
+/*__KERNEL__*/
+var PAGES = JSON.parse(document.getElementById("pagesData").textContent);
+var BYID = {}; PAGES.forEach(function(p){ BYID[p.id] = p; });
+
+var st = { page: "map", mode: "theory", open: {}, kcat: 0, query: "", allOpen: false };
+
+/* storage (per-viewer progress), always guarded */
+var store = {
+  get: function(k, d){ try { var v = localStorage.getItem("ntkb:" + k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set: function(k, v){ try { localStorage.setItem("ntkb:" + k, JSON.stringify(v)); } catch(e){} }
+};
+var readMap = store.get("read", {});
+var knownMap = store.get("known", {});
+
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function stripTags(s){ return String(s).replace(/<[^>]+>/g, ""); }
+
+/* theme */
+(function(){
+  var t = store.get("theme", null);
+  if (!t) t = (window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches) ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", t);
+})();
+document.getElementById("themeBtn").onclick = function(){
+  var t = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", t); store.set("theme", t);
+};
+document.getElementById("menuBtn").onclick = function(){ document.body.classList.toggle("drawer"); };
+document.getElementById("backdrop").onclick = function(){ document.body.classList.remove("drawer"); };
+
+function pageProgress(p){
+  if (p.id === "map" || p.id === "lit") return [0, 0];
+  if (p.kind === "md"){
+    var n = p.sections.filter(function(s){ return !s.part; }).length, r = 0;
+    p.sections.forEach(function(s, i){ if (!s.part && readMap[p.id + "/" + i]) r++; });
+    return [r, n];
+  }
+  if (p.kind === "kernel"){
+    var tot = 0, rd = 0;
+    KERNEL.forEach(function(c, ci){ c.theory.forEach(function(t, ti){ tot++; if (readMap["kernel/" + ci + "/" + ti]) rd++; }); });
+    return [rd, tot];
+  }
+  return [0, 0];
+}
+
+function renderSide(){
+  var h = "", g = null;
+  PAGES.forEach(function(p){
+    if (p.group !== g){ g = p.group; h += '<div class="grp">' + esc(g) + '</div>'; }
+    var pr = pageProgress(p), act = st.page === p.id && !st.query;
+    h += '<button class="nav' + (act ? " act" : "") + '" data-page="' + p.id + '" style="' + (act ? "background:" + p.color + "22" : "") + '">' +
+         '<span class="ic">' + p.icon + '</span><span>' + esc(p.short) + '</span>' +
+         (pr[1] ? '<span class="pr">' + pr[0] + '/' + pr[1] + '</span>' : '') + '</button>';
+  });
+  var side = document.getElementById("side"); side.innerHTML = h;
+  side.querySelectorAll("[data-page]").forEach(function(b){
+    b.onclick = function(){ document.body.classList.remove("drawer"); go(this.getAttribute("data-page")); };
+  });
+}
+
+function go(pid, sec){
+  st.query = ""; document.getElementById("q").value = "";
+  if (st.page !== pid){ st.mode = "theory"; st.open = {}; st.kcat = 0; st.allOpen = (pid === "lit"); }
+  st.page = pid;
+  var hash = "#" + pid + (sec !== undefined ? "/" + sec : "");
+  if (location.hash !== hash) history.replaceState(null, "", hash);
+  if (sec !== undefined){
+    if (pid === "kernel"){ var parts = String(sec).split("."); st.kcat = +parts[0]; st.mode = parts[1] === "q" ? "qa" : "theory"; st.open = {}; st.open[(parts[1] === "q" ? "q" : "t") + parts[2]] = true; }
+    else { st.mode = "theory"; st.open[sec] = true; }
+  }
+  render();
+  if (sec !== undefined){
+    setTimeout(function(){ var el = document.getElementById("s-" + String(sec).replace(/\./g,"-")); if (el) el.scrollIntoView({block:"start"}); }, 30);
+  } else window.scrollTo(0, 0);
+}
+
+function headHtml(p, sub){
+  return '<div class="phead"><div class="pico" style="background:' + p.color + '22">' + p.icon + '</div><div><div class="ptitle">' +
+         esc(p.title || p.short) + '</div><div class="psub">' + sub + '</div></div></div>';
+}
+function modesHtml(p, list){
+  var h = '<div class="modes">';
+  list.forEach(function(m){
+    var a = st.mode === m[0];
+    h += '<button class="mode" data-mode="' + m[0] + '" style="' + (a ? "background:" + p.color + ";border-color:" + p.color + ";color:#fff" : "") + '">' + m[1] + '</button>';
+  });
+  return h + '</div>';
+}
+function bar(p, r, n){
+  var pct = n ? Math.round(100 * r / n) : 0;
+  return '<span>Прочитано ' + r + ' из ' + n + '</span><span class="bar"><i style="width:' + pct + '%;background:' + p.color + '"></i></span>';
+}
+
+function renderMd(p){
+  var pr = pageProgress(p), qn = 0;
+  p.questions.forEach(function(g){ qn += g.items.length; });
+  var h = headHtml(p, p.sections.filter(function(s){return !s.part;}).length + " разделов · " + qn + " вопросов");
+  if (p.intro) h += '<div class="intro md">' + p.intro + '</div>';
+  if (p.id === "map") h += mapTiles();
+  var modes = [["theory", "📖 Теория"]];
+  if (qn) modes.push(["qa", "💬 Вопросы (" + qn + ")"]);
+  h += modesHtml(p, modes);
+  if (st.mode === "theory"){
+    h += '<div class="tools">' + (pr[1] ? bar(p, pr[0], pr[1]) : '') +
+         '<button class="lnk" id="toggleAll">' + (st.allOpen ? "Свернуть все" : "Развернуть все") + '</button></div>';
+    var n = 0;
+    p.sections.forEach(function(s, i){
+      if (s.part){ h += '<div class="part">' + esc(s.t) + '</div>' + (s.h ? '<div class="md">' + s.h + '</div>' : ''); return; }
+      n++;
+      var o = st.allOpen || !!st.open[i], rd = !!readMap[p.id + "/" + i];
+      var title = s.t.replace(/^\d+(\.\d+)*\.?\s+/, "");
+      h += '<div class="card" id="s-' + i + '" style="' + (o ? "border-color:" + p.color + "66" : "") + '">' +
+           '<div class="card-h" data-open="' + i + '"><span class="num">' + n + '</span><span class="ct">' + esc(title) + '</span>' +
+           '<button class="chk' + (rd ? " on" : "") + '" data-read="' + i + '" title="Отметить прочитанным">✓</button>' +
+           '<span class="arr">' + (o ? "▲" : "▼") + '</span></div>' +
+           (o ? '<div class="card-b md">' + hl(s.h) + '</div>' : '') + '</div>';
+    });
+  } else {
+    h += questionsHtml(p);
+  }
+  return h;
+}
+
+function mapTiles(){
+  var h = '<div class="tiles">';
+  PAGES.forEach(function(p){
+    if (p.id === "map") return;
+    var pr = pageProgress(p);
+    h += '<button class="tile" data-go="' + p.id + '"><div class="ti">' + p.icon + '</div><div class="tt">' + esc(p.short) +
+         '</div><div class="ts">' + esc(p.group) + (pr[1] ? ' · прочитано ' + pr[0] + '/' + pr[1] : '') + '</div></button>';
+  });
+  return h + '</div>';
+}
+
+function questionsHtml(p){
+  var all = [], h = "";
+  p.questions.forEach(function(g, gi){ g.items.forEach(function(q, qi){ all.push([gi, qi, q]); }); });
+  var kn = all.filter(function(a){ return knownMap[p.id + "/" + a[0] + "/" + a[1]]; }).length;
+  h += '<div class="tools">' + '<span>Знаю ' + kn + ' из ' + all.length + '</span><span class="bar"><i style="width:' +
+       (all.length ? Math.round(100 * kn / all.length) : 0) + '%;background:' + p.color + '"></i></span>' +
+       '<button class="lnk" id="randQ">🎲 Случайный незакрытый вопрос</button></div>';
+  if (st.rand && st.rand.page === p.id){
+    h += '<div class="rand"><div class="ans-l" style="color:' + p.color + '">Ответь вслух за 2 минуты</div><div class="rq">' + st.rand.q +
+         '</div><button class="lnk" id="randNext">Следующий</button> · <button class="lnk" id="randKnow">Знаю — отметить</button></div>';
+  }
+  p.questions.forEach(function(g, gi){
+    h += '<div class="qg">' + esc(g.g) + '</div>';
+    g.items.forEach(function(q, qi){
+      var k = p.id + "/" + gi + "/" + qi, on = !!knownMap[k];
+      h += '<div class="q' + (on ? " known" : "") + '"><span class="qn">' + (qi + 1) + '</span><span class="qt">' + q +
+           '</span><button class="chk' + (on ? " on" : "") + '" data-known="' + k + '" title="Знаю">✓</button></div>';
+    });
+  });
+  h += '<div class="tip"><b>Как отвечать: </b>называй инструмент + конкретную команду или метрику + что именно ищешь в выводе. Ответы — в разделах теории этой страницы.</div>';
+  return h;
+}
+
+function renderKernel(p){
+  var c = KERNEL[st.kcat];
+  var h = headHtml(p, KERNEL.length + " подсистем · теория, вопросы с эталонными ответами, глоссарий");
+  h += '<div class="chips">';
+  KERNEL.forEach(function(k, j){
+    var a = st.kcat === j;
+    h += '<button class="chip" data-kcat="' + j + '" style="' + (a ? "border-color:" + k.color + ";background:" + k.color + "22;color:" + k.color : "") + '">' + k.icon + " " + esc(k.title) + '</button>';
+  });
+  h += '</div>';
+  h += modesHtml({color: c.color}, [["theory","📖 Теория"],["qa","💬 Вопросы"],["terms","📚 Глоссарий"]]);
+  if (st.mode === "theory"){
+    c.theory.forEach(function(t, k){
+      var o = !!st.open["t" + k], rk = "kernel/" + st.kcat + "/" + k, rd = !!readMap[rk];
+      h += '<div class="card" id="s-' + st.kcat + '-t-' + k + '" style="' + (o ? "border-color:" + c.color + "66" : "") + '">' +
+           '<div class="card-h" data-open="t' + k + '"><span class="num">' + (k + 1) + '</span><span class="ct">' + esc(t.title) + '</span>' +
+           '<button class="chk' + (rd ? " on" : "") + '" data-read="' + rk + '">✓</button><span class="arr">' + (o ? "▲" : "▼") + '</span></div>' +
+           (o ? '<div class="card-b"><pre class="kpre" style="border-left-color:' + c.color + '55">' + hl(esc(t.body)) + '</pre></div>' : '') + '</div>';
+    });
+    h += '<div class="tip"><b>Как учить: </b>прочитай раздел, открой «Вопросы», ответь вслух своими словами 2 минуты и сверься с эталоном.</div>';
+  } else if (st.mode === "qa"){
+    c.qa.forEach(function(q, m){
+      var o = !!st.open["q" + m];
+      h += '<div class="card" id="s-' + st.kcat + '-q-' + m + '" style="' + (o ? "border-color:" + c.color + "66" : "") + '">' +
+           '<div class="card-h" data-open="q' + m + '"><span class="num">' + (m + 1) + '</span><span class="ct">' + esc(q.q) + '</span><span class="arr">' + (o ? "▲" : "▼") + '</span></div>' +
+           (o ? '<div class="card-b"><div class="ans" style="border:1px solid ' + c.color + '33"><div class="ans-l" style="color:' + c.color + '">Эталонный ответ</div><pre>' + esc(q.a) + '</pre></div></div>' : '') + '</div>';
+    });
+  } else {
+    c.terms.forEach(function(t){
+      h += '<div class="term"><div class="term-t" style="color:' + c.color + '">' + esc(t.t) + '</div><div class="term-d">' + esc(t.d) + '</div></div>';
+    });
+  }
+  return h;
+}
+
+/* highlight current query inside opened content (text nodes only, rough) */
+var HL = "";
+function hl(html){
+  if (!HL || HL.length < 2) return html;
+  var re = new RegExp("(" + HL.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
+  return html.split(/(<[^>]+>)/).map(function(part){ return part.charAt(0) === "<" ? part : part.replace(re, "<mark>$1</mark>"); }).join("");
+}
+
+function searchResults(q){
+  var ql = q.toLowerCase(), out = [];
+  function snip(text){
+    var i = text.toLowerCase().indexOf(ql); if (i < 0) return "";
+    var a = Math.max(0, i - 70), b = Math.min(text.length, i + ql.length + 110);
+    return (a ? "…" : "") + esc(text.slice(a, i)) + "<mark>" + esc(text.slice(i, i + ql.length)) + "</mark>" + esc(text.slice(i + ql.length, b)) + (b < text.length ? "…" : "");
+  }
+  PAGES.forEach(function(p){
+    if (p.kind !== "md") return;
+    p.sections.forEach(function(s, i){
+      if (s.part) return;
+      if (s.x.toLowerCase().indexOf(ql) >= 0) out.push({p: p, sec: i, t: s.t, s: snip(s.x), score: s.t.toLowerCase().indexOf(ql) >= 0 ? 0 : 1});
+    });
+  });
+  var kp = BYID.kernel;
+  KERNEL.forEach(function(c, ci){
+    c.theory.forEach(function(t, ti){
+      var txt = t.title + " " + t.body;
+      if (txt.toLowerCase().indexOf(ql) >= 0) out.push({p: kp, sec: ci + ".t." + ti, t: c.title + " → " + t.title, s: snip(txt), score: t.title.toLowerCase().indexOf(ql) >= 0 ? 0 : 1});
+    });
+    c.qa.forEach(function(x, qi){
+      var txt = x.q + " " + x.a;
+      if (txt.toLowerCase().indexOf(ql) >= 0) out.push({p: kp, sec: ci + ".q." + qi, t: c.title + " → ❓ " + x.q, s: snip(txt), score: 2});
+    });
+  });
+  out.sort(function(a, b){ return a.score - b.score; });
+  return out;
+}
+
+function renderSearch(){
+  var res = searchResults(st.query), h = '<div class="ptitle" style="margin-bottom:4px">Поиск: «' + esc(st.query) + '»</div><div class="psub" style="margin-bottom:14px">' + res.length + ' совпадений</div>';
+  if (!res.length) h += '<div class="empty">Ничего не найдено. Попробуй другое слово или английский термин.</div>';
+  res.slice(0, 150).forEach(function(r, i){
+    h += '<button class="res" data-res="' + i + '"><div class="rp">' + r.p.icon + ' ' + esc(r.p.short) + '</div><div class="rt">' + esc(r.t) + '</div><div class="rs">' + r.s + '</div></button>';
+  });
+  st._res = res;
+  return h;
+}
+
+function render(){
+  var v = document.getElementById("view"), h;
+  HL = st.query ? "" : (st.hl || "");
+  if (st.query && st.query.length >= 2) h = renderSearch();
+  else {
+    var p = BYID[st.page] || PAGES[0];
+    h = p.kind === "kernel" ? renderKernel(p) : renderMd(p);
+  }
+  v.innerHTML = h;
+  renderSide();
+  bind(v);
+}
+
+function bind(v){
+  v.querySelectorAll("[data-mode]").forEach(function(b){ b.onclick = function(){ st.mode = this.getAttribute("data-mode"); st.open = {}; render(); }; });
+  v.querySelectorAll("[data-kcat]").forEach(function(b){ b.onclick = function(){ st.kcat = +this.getAttribute("data-kcat"); st.open = {}; render(); }; });
+  v.querySelectorAll("[data-open]").forEach(function(b){
+    b.onclick = function(e){
+      if (e.target.closest("[data-read]")) return;
+      var k = this.getAttribute("data-open");
+      if (st.allOpen){ st.allOpen = false; var p = BYID[st.page]; if (p.sections) p.sections.forEach(function(s, i){ st.open[i] = true; }); }
+      st.open[k] = !st.open[k]; render();
+    };
+  });
+  v.querySelectorAll("[data-read]").forEach(function(b){
+    b.onclick = function(e){
+      e.stopPropagation();
+      var k = this.getAttribute("data-read"), key = /^kernel\//.test(k) ? k : st.page + "/" + k;
+      if (readMap[key]) delete readMap[key]; else readMap[key] = 1;
+      store.set("read", readMap); render();
+    };
+  });
+  v.querySelectorAll("[data-known]").forEach(function(b){
+    b.onclick = function(){ var k = this.getAttribute("data-known"); if (knownMap[k]) delete knownMap[k]; else knownMap[k] = 1; store.set("known", knownMap); render(); };
+  });
+  v.querySelectorAll("[data-go]").forEach(function(b){ b.onclick = function(){ go(this.getAttribute("data-go")); }; });
+  v.querySelectorAll("[data-res]").forEach(function(b){
+    b.onclick = function(){ var r = st._res[+this.getAttribute("data-res")]; st.hl = st.query; go(r.p.id, r.sec); };
+  });
+  var ta = document.getElementById("toggleAll");
+  if (ta) ta.onclick = function(){ st.allOpen = !st.allOpen; if (!st.allOpen) st.open = {}; render(); };
+  var rq = document.getElementById("randQ");
+  if (rq) rq.onclick = function(){ pickRandom(); render(); };
+  var rn = document.getElementById("randNext");
+  if (rn) rn.onclick = function(){ pickRandom(); render(); };
+  var rk = document.getElementById("randKnow");
+  if (rk) rk.onclick = function(){ knownMap[st.rand.key] = 1; store.set("known", knownMap); pickRandom(); render(); };
+  v.querySelectorAll("a.wl").forEach(function(a){
+    a.onclick = function(e){ e.preventDefault(); st.hl = ""; go(this.getAttribute("href").slice(1)); };
+  });
+}
+
+function pickRandom(){
+  var p = BYID[st.page], pool = [];
+  p.questions.forEach(function(g, gi){ g.items.forEach(function(q, qi){ var k = p.id + "/" + gi + "/" + qi; if (!knownMap[k]) pool.push({q: q, key: k}); }); });
+  if (!pool.length){ st.rand = {page: p.id, q: "Все вопросы отмечены как известные 🎉", key: ""}; return; }
+  var x = pool[Math.floor(Math.random() * pool.length)];
+  st.rand = {page: p.id, q: x.q, key: x.key};
+}
+
+var qt;
+document.getElementById("q").addEventListener("input", function(){
+  var val = this.value.trim();
+  clearTimeout(qt);
+  qt = setTimeout(function(){ st.query = val; if (!val) st.hl = ""; render(); window.scrollTo(0, 0); }, 160);
+});
+
+function fromHash(){
+  var h = decodeURIComponent(location.hash.slice(1));
+  if (!h) return;
+  var parts = h.split("/"), pid = parts[0];
+  if (!BYID[pid]) return;
+  st.hl = "";
+  go(pid, parts.length > 1 ? (pid === "kernel" ? parts[1] : +parts[1]) : undefined);
+}
+window.addEventListener("hashchange", fromHash);
+if (location.hash) fromHash(); else render();
+</script>
+</body>
+</html>
